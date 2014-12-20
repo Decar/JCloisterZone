@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.lang.reflect.Proxy;
 import java.net.InetSocketAddress;
 import java.net.URISyntaxException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -251,30 +253,29 @@ public class Client extends JFrame {
    {
 	   Container container = gamePanel.getGridPanel();
        BufferedImage im = new BufferedImage(container.getWidth(), container.getHeight(), BufferedImage.TYPE_INT_ARGB);
-       JFileChooser fc = new JFileChooser(System.getProperty("user.dir") + System.getProperty("file.separator"));
-       fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-       fc.setDialogTitle(_("Save Screenshot"));
-       fc.setDialogType(JFileChooser.SAVE_DIALOG);
-       fc.setFileFilter(new PNGFileFilter());
-       fc.setLocale(getLocale());
-       int returnVal = fc.showSaveDialog(this);
-       if (returnVal == JFileChooser.APPROVE_OPTION) {
-           File file = fc.getSelectedFile();
-           if (file != null) {
-               if (!file.getName().endsWith(".png")) {
-                   file = new File(file.getAbsolutePath() + ".png");
-               }
-               try
-               {
-        	       FileOutputStream fos = new FileOutputStream(file);
-        	       container.paint(im.getGraphics());
-        	       ImageIO.write(im, "PNG", fos);
-        	       fos.close();
-               } catch (IOException ex) {
-                   logger.error(ex.getMessage(), ex);
-                   JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), _("Error"), JOptionPane.ERROR_MESSAGE);
-               }
-           }
+       
+       String pngExt = ".png";
+       String screenFolderValue = config.getScreenshot_folder();
+       File screenshotFolder;
+       if (screenFolderValue == null){
+           screenshotFolder = new File(System.getProperty("user.dir"));
+       }
+       else{
+           screenshotFolder = new File(screenFolderValue);
+       }
+       //file name
+       SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd_HHmmss");
+       File filename = new File (screenshotFolder,"screenshot_" + getUserName() + "_"+sdf.format(new Date())+ pngExt);
+       //
+       try
+       {
+           FileOutputStream fos = new FileOutputStream(filename);
+           container.paint(im.getGraphics());
+           ImageIO.write(im, "PNG", fos);
+           fos.close();
+       } catch (IOException ex) {
+           logger.error(ex.getMessage(), ex);
+           JOptionPane.showMessageDialog(this, ex.getLocalizedMessage(), _("Error"), JOptionPane.ERROR_MESSAGE);
        }
    }
 
