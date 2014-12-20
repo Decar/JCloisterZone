@@ -145,7 +145,7 @@ public class MenuBar extends JMenuBar {
         menu.addSeparator();
         
         screenShot = new JMenuItem(_("Take Screenshot"));
-        screenShot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F2,0));
+        screenShot.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F12,0));
         screenShot.setEnabled(false);
         screenShot.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
