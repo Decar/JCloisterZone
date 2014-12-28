@@ -14,6 +14,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -29,8 +30,10 @@ import com.jcloisterzone.XmlUtils;
 import com.jcloisterzone.board.Position;
 import com.jcloisterzone.board.Tile;
 import com.jcloisterzone.event.TileEvent;
+import com.jcloisterzone.game.Game;
 import com.jcloisterzone.game.Snapshot;
 import com.jcloisterzone.ui.Client;
+import com.jcloisterzone.ui.GifAnimator;
 import com.jcloisterzone.ui.animation.AnimationService;
 import com.jcloisterzone.ui.animation.RecentPlacement;
 import com.jcloisterzone.ui.controls.ChatPanel;
@@ -70,6 +73,8 @@ public class GridPanel extends JPanel implements ForwardBackwardListener {
 
     private List<GridLayer> layers = new ArrayList<GridLayer>();
     private String errorMessage;
+
+    private GifAnimator animator;
     //private String hintMessage;
 
     public GridPanel(Client client, ControlPanel controlPanel, ChatPanel chatPanel, Snapshot snapshot) {
@@ -434,10 +439,31 @@ public class GridPanel extends JPanel implements ForwardBackwardListener {
                 (initialPlacement && tile.equals(client.getGame().getCurrentTile()))) {
                 getAnimationService().registerAnimation(new RecentPlacement(tile.getPosition()));
             }
+            animate();
         } else if (ev.getType() == TileEvent.REMOVE) {
             tileLayer.tileRemoved(tile);
         }
         repaint();
+    }
+
+
+    public void startAnimation() {
+        this.animator = new GifAnimator();
+    }
+    
+    public void animate() {
+        if (animator != null) {
+            BufferedImage im = takeScreenshot();
+            int boardSize = client.getConfig().getScreenshot_scale();
+            animator.addToGif(im, left * boardSize, top * boardSize);
+        }
+    }
+
+    public void endAnimation() {
+        if (this.animator != null) {
+            animator.close();
+        }
+        animator = null;
     }
 
     private int calculateCenterX() {
@@ -532,14 +558,16 @@ public class GridPanel extends JPanel implements ForwardBackwardListener {
     }
 
     public BufferedImage takeScreenshot()
-    {        
+    {
         //calculate size of play board
-        int totalWidth = INITIAL_SQUARE_SIZE*(right-left+1);
-        int totalHeight = INITIAL_SQUARE_SIZE*(bottom-top+1);
+        int boardSize = client.getConfig().getScreenshot_scale();
+        int totalWidth = boardSize*(right-left+1);
+        int totalHeight = boardSize*(bottom-top+1);
+        if(totalHeight < getHeight()) totalHeight = getHeight();
     
         //centre the image
-        int transX = -INITIAL_SQUARE_SIZE*(left);
-        int transY = -INITIAL_SQUARE_SIZE*(top);
+        int transX = -boardSize*(left);
+        int transY = -boardSize*(top);
         
         //create the image
         BufferedImage im = new BufferedImage(totalWidth + controlPanel.getWidth(), totalHeight, BufferedImage.TYPE_INT_ARGB);
@@ -558,10 +586,10 @@ public class GridPanel extends JPanel implements ForwardBackwardListener {
         //TODO is this dangerous if GridPanel is rendered while print screening?
         
         int orig = squareSize;
-        squareSize = INITIAL_SQUARE_SIZE;
+        squareSize = boardSize;
         for (GridLayer layer : layers) {
             if (layer.isVisible()) {
-                layer.zoomChanged(INITIAL_SQUARE_SIZE);
+                layer.zoomChanged(boardSize);
                 layer.paint(graphics);
                 layer.zoomChanged(orig);
             }
