@@ -107,10 +107,14 @@ public class ClientController  {
         switch (ev.getType()) {
         case GameStateChangeEvent.GAME_START:
             started(ev);
+            gamePanel.getGridPanel().startAnimation();
+            gamePanel.getGridPanel().animate();
             break;
         case GameStateChangeEvent.GAME_OVER:
             client.closeGame(true);
+            gamePanel.getGridPanel().animate();
             new GameOverDialog(client);
+            gamePanel.getGridPanel().endAnimation();
             break;
         }
     }
@@ -121,6 +125,7 @@ public class ClientController  {
         menu.setZoomInEnabled(true);
         menu.setZoomOutEnabled(true);
         menu.setScreenshotEnabled(true);
+        menu.setRemainingTilesEnabled(true);
         menu.setIsGameRunning(true);
     }
 
@@ -171,6 +176,7 @@ public class ClientController  {
         case TileEvent.PLACEMENT:
         case TileEvent.REMOVE:
             gamePanel.getMainPanel().tileEvent(ev);
+            gamePanel.getGridPanel().animate();
             break;
         }
     }
@@ -185,23 +191,27 @@ public class ClientController  {
             gamePanel.getMainPanel().fairyMoved(ev.getTo());
             break;
         }
+        gamePanel.getGridPanel().animate();
     }
 
     @Subscribe
     public void tunnelPiecePlaced(TunnelPiecePlacedEvent ev) {
         gamePanel.getMainPanel().tunnelPiecePlaced(ev.getTriggeringPlayer(), ev.getPosition(), ev.getLocation(), ev.isSecondPiece());
+        gamePanel.getGridPanel().animate();
     }
 
 
     @Subscribe
     public void flierRoll(FlierRollEvent ev) {
         gamePanel.getMainPanel().flierRoll(ev.getPosition(), ev.getDistance());
+        gamePanel.getGridPanel().animate();
     }
 
     @Subscribe
     public void towerIncreased(TowerIncreasedEvent ev) {
         client.clearActions();
         gamePanel.getMainPanel().towerIncreased(ev.getPosition(), ev.getCaptureRange());
+        gamePanel.getGridPanel().animate();
     }
 
     // ------------------ Meeple events -----------
@@ -209,22 +219,26 @@ public class ClientController  {
     @Subscribe
     public void meepleEvent(MeepleEvent ev) {
         gamePanel.getMainPanel().meepleEvent(ev);
+        gamePanel.getGridPanel().animate();
     }
 
     @Subscribe
     public void meeplePrisonEvent(MeeplePrisonEvent ev) {
         gamePanel.getGridPanel().repaint();
+        gamePanel.getGridPanel().animate();
     }
 
 
     @Subscribe
     public void bridgeDeployed(BridgeDeployedEvent ev) {
         gamePanel.getMainPanel().bridgeDeployed(ev.getPosition(), ev.getLocation());
+        gamePanel.getGridPanel().animate();
     }
 
     @Subscribe
     public void castleDeployed(CastleDeployedEvent ev) {
         gamePanel.getMainPanel().castleDeployed(ev.getPart1(), ev.getPart2());
+        gamePanel.getGridPanel().animate();
     }
 
     // ------------------ Feature events ----------
@@ -238,6 +252,7 @@ public class ClientController  {
             gamePanel.getMainPanel().scored(ev.getFeature(), ev.getTargetPlayer(), ev.getLabel(), ev.getMeepleType(), ev.isFinal());
         }
         gamePanel.getMainPanel().repaint(); // players only
+        gamePanel.getGridPanel().animate();
     }
 
 
@@ -331,6 +346,7 @@ public class ClientController  {
         BazaarPanel bazaarPanel = createSecondPanel(BazaarPanel.class);
         bazaarPanel.setState(BazaarPanelState.INACTIVE);
         gamePanel.getGridPanel().repaint();
+        gamePanel.getGridPanel().animate();
     }
 
     @Subscribe

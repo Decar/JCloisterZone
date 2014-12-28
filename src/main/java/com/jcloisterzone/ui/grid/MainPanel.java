@@ -197,6 +197,7 @@ public class MainPanel extends JPanel {
         gridPanel.clearActionDecorations();
         gridPanel.hideLayer(AbstractTilePlacementLayer.class);
         gridPanel.setSecondPanel(null);
+        gridPanel.endAnimation();
     }
 
     public void tileEvent(TileEvent ev) {
